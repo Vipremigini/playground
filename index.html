@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Name | Creative Learning Tools</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins & Paytone One for a fun look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Paytone+One&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc; /* Lighter gray background */
+            overflow-x: hidden;
+        }
+        .font-display {
+            font-family: 'Paytone One', sans-serif;
+        }
+        
+        /* Styles for the scroll-triggered animations */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .scroll-animate.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Styles for the parallax background shapes and cards */
+        .parallax-element {
+            transition: transform 0.1s linear;
+        }
+        .parallax-shape {
+            position: absolute;
+            z-index: -1;
+            opacity: 0.7;
+        }
+        .project-card {
+            background-color: white;
+            border-top-width: 4px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .project-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        #about-particles-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            border-radius: 1rem; /* Match the card's border-radius */
+        }
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        #hero-canvas:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Parallax Background Shapes -->
+    <div>
+        <svg class="parallax-element parallax-shape" data-speed="0.5" style="top: 10%; left: 5%; width: 200px;" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#e0f2fe" d="M48.2,-63.1C62.2,-53.1,73.2,-37.9,78.2,-21C83.2,-4.1,82.2,14.5,74.5,29.8C66.8,45.1,52.4,57.1,36.9,65.6C21.4,74.1,4.8,79.1,-11.3,76.9C-27.4,74.7,-43.1,65.3,-55.8,52.6C-68.5,39.9,-78.2,23.9,-79.8,7.1C-81.4,-9.7,-74.9,-27.2,-63.8,-40.9C-52.7,-54.6,-37,-64.5,-21.2,-69.5C-5.5,-74.5,10.2,-75.1,24.5,-72.1C38.8,-69.1,48.2,-63.1,48.2,-63.1Z" transform="translate(100 100)" />
+        </svg>
+        <svg class="parallax-element parallax-shape" data-speed="0.8" style="top: 45%; right: 5%; width: 300px;" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#fce7f3" d="M54.2,-62.7C68.8,-53.5,78.2,-36.8,79.5,-19.7C80.8,-2.6,74.1,14.9,64.8,30.7C55.5,46.5,43.6,60.6,28.8,69.5C14,78.4,-3.7,82.1,-20.9,77.3C-38.1,72.5,-54.8,59.2,-65.9,43.3C-77,27.4,-82.5,8.9,-79.7,-8.1C-76.9,-25.1,-65.8,-40.6,-51.9,-50.2C-38,-59.8,-21.3,-63.5,-4.4,-62.4C12.5,-61.3,25.1,-55.4,38.1,-54.2C51.1,-53,54.2,-62.7,54.2,-62.7Z" transform="translate(100 100)" />
+        </svg>
+         <svg class="parallax-element parallax-shape" data-speed="0.3" style="top: 80%; left: 15%; width: 150px;" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#ede9fe" d="M42.6,-51.9C57.4,-44.1,73.2,-33.2,76.5,-19.4C79.8,-5.6,70.6,11,60.7,24.8C50.8,38.6,40.2,49.6,27.7,58.7C15.2,67.8,0.8,75,-14.9,74C-30.6,73,-47.5,63.8,-59.1,50.3C-70.7,36.8,-76.9,19.1,-75.5,2.7C-74.1,-13.7,-65.1,-28.8,-53.8,-39.3C-42.5,-49.8,-28.9,-55.7,-15.8,-58.3C-2.7,-60.9,10,-60.2,23.5,-58.3C37.1,-56.4,42.6,-51.9,42.6,-51.9Z" transform="translate(100 100)" />
+        </svg>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-slate-200">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="font-display text-2xl font-bold text-slate-900">Aditya PV</a>
+            <a href="mailto:your.email@example.com" class="bg-slate-900 text-white font-bold py-2 px-5 rounded-full text-sm hover:bg-slate-700 transition">Get In Touch</a>
+        </nav>
+    </header>
+
+    <main>
+        
+        <!-- Hero Section -->
+        <section class="relative w-full h-[75vh] bg-white border-b border-slate-200">
+            <canvas id="hero-canvas"></canvas>
+            <div class="relative z-10 flex flex-col items-center justify-center h-full text-center p-6 pointer-events-none">
+                <h1 class="font-display text-5xl md:text-8xl font-extrabold mb-4 text-slate-900">A Playground for Curious Minds</h1>
+                <p class="text-lg md:text-xl text-slate-600">I build fun, interactive tools to explore complex ideas. Click and drag to create new balls!</p>
+            </div>
+        </section>
+
+        <div class="container mx-auto px-6">
+            <!-- Projects Grid -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-12 my-20">
+                
+                <div class="project-card rounded-2xl p-8 border-cyan-500 scroll-animate">
+                    <h3 class="font-display text-3xl font-bold mb-2 text-slate-900">Linear Transformation Visualizer</h3>
+                    <p class="text-slate-600 mb-6">See how matrices can warp the very fabric of space. An interactive tool to understand the fundamentals of linear algebra.</p>
+                    <a href="#" class="font-bold text-cyan-600 hover:underline">Launch App &rarr;</a>
+                </div>
+
+                <div class="project-card rounded-2xl p-8 border-violet-500 scroll-animate">
+                    <h3 class="font-display text-3xl font-bold mb-2 text-slate-900">Fourier Series Explorer</h3>
+                    <p class="text-slate-600 mb-6">Deconstruct complex signals into simple sine waves, like the rings of a planet forming from dust.</p>
+                    <a href="#" class="font-bold text-violet-600 hover:underline">Coming Soon...</a>
+                </div>
+
+                <div class="project-card rounded-2xl p-8 border-emerald-500 scroll-animate">
+                    <h3 class="font-display text-3xl font-bold mb-2 text-slate-900">Quantum State Simulator</h3>
+                    <p class="text-slate-600 mb-6">Peer into the strange universe of quantum superposition and the probabilistic nature of reality.</p>
+                    <a href="#" class="font-bold text-emerald-600 hover:underline">Coming Soon...</a>
+                </div>
+
+                <div class="project-card rounded-2xl p-8 border-rose-500 scroll-animate">
+                    <h3 class="font-display text-3xl font-bold mb-2 text-slate-900">Another Cool Project</h3>
+                    <p class="text-slate-600 mb-6">This is a placeholder for the next amazing learning tool I'm excited to build and share with the world.</p>
+                    <a href="#" class="font-bold text-rose-600 hover:underline">Coming Soon...</a>
+                </div>
+            </section>
+
+            <!-- About Me Section -->
+            <section class="my-32 md:my-48">
+                <div id="about-container" class="relative scroll-animate">
+                    <canvas id="about-particles-canvas"></canvas>
+                    <div class="relative z-10 bg-white/60 backdrop-blur-lg rounded-2xl p-8 md:p-12 shadow-lg border border-slate-200">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 items-center">
+                            <div class="md:col-span-1">
+                                <img src="https://avatars.githubusercontent.com/u/120324502?v=4" alt="A photo of Your Name" class="rounded-full shadow-2xl mx-auto border-4 border-white">
+                            </div>
+                            <div class="md:col-span-2 text-center md:text-left">
+                                <h2 class="font-display text-4xl font-bold mb-4 text-slate-900">Hi, I'm Aditya!</h2>
+                                <p class="text-lg text-slate-600 mb-2">I'm a developer and lifelong learner, passionate about finding beautiful ways to explain our complex world. I believe the right visualization can make any concept click, and that's why I build these tools.</p>
+                                <p class="text-lg text-slate-600">When I'm not coding, you can find me stargazing, reading sci-fi, or trying to figure out the next big idea to visualize!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-8 mt-16 border-t border-slate-200">
+        <div class="container mx-auto px-6 text-center text-slate-500">
+            <p>&copy; 2024 Your Name. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Scroll-triggered fade-in animation ---
+        const scrollObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.scroll-animate').forEach(el => {
+            scrollObserver.observe(el);
+        });
+
+        // --- Parallax scroll effect ---
+        const parallaxElements = document.querySelectorAll('.parallax-element');
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            parallaxElements.forEach(el => {
+                const speed = el.dataset.speed;
+                const yPos = -(scrollY * speed / 4);
+                el.style.transform = `translateY(${yPos}px)`;
+            });
+        });
+
+        // --- "About Me" Section Particle Effect ---
+        const aboutCanvas = document.getElementById('about-particles-canvas');
+        const aboutContainer = document.getElementById('about-container');
+        const aboutCtx = aboutCanvas.getContext('2d');
+        let aboutParticlesArray;
+
+        function resizeAboutCanvas() {
+            if (!aboutContainer) return;
+            aboutCanvas.width = aboutContainer.offsetWidth;
+            aboutCanvas.height = aboutContainer.offsetHeight;
+            initAboutParticles();
+        }
+
+        class AboutParticle {
+            constructor() {
+                this.x = Math.random() * aboutCanvas.width;
+                this.y = aboutCanvas.height + Math.random() * 50;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = Math.random() * 1 + 0.5;
+                this.opacity = Math.random() * 0.5 + 0.2;
+                this.color = `rgba(236, 72, 153, ${this.opacity})`; // Pink color
+            }
+            update() { this.y -= this.speedY; if (this.y < 0) { this.x = Math.random() * aboutCanvas.width; this.y = aboutCanvas.height + 10; } }
+            draw() { aboutCtx.fillStyle = this.color; aboutCtx.beginPath(); aboutCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2); aboutCtx.fill(); }
+        }
+
+        function initAboutParticles() {
+            aboutParticlesArray = [];
+            let numberOfParticles = (aboutCanvas.width * aboutCanvas.height) / 9000;
+            for (let i = 0; i < numberOfParticles; i++) { aboutParticlesArray.push(new AboutParticle()); }
+        }
+
+        function animateAboutParticles() {
+            if (!aboutCanvas) return;
+            aboutCtx.clearRect(0, 0, aboutCanvas.width, aboutCanvas.height);
+            for (let i = 0; i < aboutParticlesArray.length; i++) { aboutParticlesArray[i].update(); aboutParticlesArray[i].draw(); }
+            requestAnimationFrame(animateAboutParticles);
+        }
+        
+        // --- Hero Canvas Interactive Physics Playground ---
+        const heroCanvas = document.getElementById('hero-canvas');
+        const heroCtx = heroCanvas.getContext('2d');
+        let balls = [];
+        let isMouseDown = false;
+        let startPos = null;
+        const colors = ['#22d3ee', '#a78bfa', '#f472b6', '#34d399', '#fbbf24', '#f87171'];
+        const gravity = 0.1;
+        const friction = 0.99;
+
+        function resizeHeroCanvas() {
+            heroCanvas.width = window.innerWidth;
+            heroCanvas.height = heroCanvas.parentElement.clientHeight;
+        }
+
+        class Ball {
+            constructor(x, y, radius, color, vx, vy) {
+                this.x = x; this.y = y; this.radius = radius; this.color = color; this.mass = radius; this.vx = vx; this.vy = vy;
+            }
+            draw() {
+                heroCtx.beginPath();
+                heroCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                heroCtx.fillStyle = this.color;
+                heroCtx.fill();
+                heroCtx.closePath();
+            }
+            update() {
+                this.vy += gravity; this.x += this.vx; this.y += this.vy;
+                if (this.x + this.radius > heroCanvas.width || this.x - this.radius < 0) { this.vx *= -friction; }
+                if (this.y + this.radius > heroCanvas.height || this.y - this.radius < 0) { this.vy *= -friction; }
+                if (this.x + this.radius > heroCanvas.width) this.x = heroCanvas.width - this.radius;
+                if (this.x - this.radius < 0) this.x = this.radius;
+                if (this.y + this.radius > heroCanvas.height) this.y = heroCanvas.height - this.radius;
+            }
+        }
+        
+        function rotate(velocity, angle) {
+            return { x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle), y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle) };
+        }
+
+        function resolveCollision(particle, otherParticle) {
+            const xVelocityDiff = particle.vx - otherParticle.vx;
+            const yVelocityDiff = particle.vy - otherParticle.vy;
+            const xDist = otherParticle.x - particle.x;
+            const yDist = otherParticle.y - particle.y;
+            if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
+                const angle = -Math.atan2(otherParticle.y - particle.y, otherParticle.x - particle.x);
+                const m1 = particle.mass; const m2 = otherParticle.mass;
+                const u1 = rotate({ x: particle.vx, y: particle.vy }, angle);
+                const u2 = rotate({ x: otherParticle.vx, y: otherParticle.vy }, angle);
+                const v1 = { x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2), y: u1.y };
+                const v2 = { x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m1 / (m1 + m2), y: u2.y };
+                const vFinal1 = rotate(v1, -angle); const vFinal2 = rotate(v2, -angle);
+                particle.vx = vFinal1.x; particle.vy = vFinal1.y;
+                otherParticle.vx = vFinal2.x; otherParticle.vy = vFinal2.y;
+            }
+        }
+
+        function getMousePos(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+        }
+
+        heroCanvas.addEventListener('mousedown', (e) => { isMouseDown = true; startPos = getMousePos(heroCanvas, e); });
+        heroCanvas.addEventListener('mouseup', (e) => {
+            if (!isMouseDown) return;
+            isMouseDown = false;
+            const endPos = getMousePos(heroCanvas, e);
+            const vx = (endPos.x - startPos.x) * 0.1;
+            const vy = (endPos.y - startPos.y) * 0.1;
+            const radius = Math.random() * 15 + 10;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            balls.push(new Ball(startPos.x, startPos.y, radius, color, vx, vy));
+        });
+
+        function initHeroBalls() {
+            balls = [];
+            let attempts = 0;
+            while(balls.length < 15 && attempts < 200) { // Increased default balls
+                let overlapping = false;
+                const radius = Math.random() * 20 + 10;
+                let x = Math.random() * (heroCanvas.width - radius * 2) + radius;
+                let y = Math.random() * (heroCanvas.height - radius * 2) + radius;
+                
+                for(let j = 0; j < balls.length; j++) {
+                    let dx = x - balls[j].x;
+                    let dy = y - balls[j].y;
+                    let distance = Math.sqrt(dx*dx + dy*dy);
+                    if(distance < radius + balls[j].radius) {
+                        overlapping = true;
+                        break;
+                    }
+                }
+
+                if(!overlapping) {
+                    const vx = (Math.random() - 0.5) * 4;
+                    const vy = (Math.random() - 0.5) * 4;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    balls.push(new Ball(x, y, radius, color, vx, vy));
+                }
+                attempts++;
+            }
+        }
+
+        function animateHero() {
+            if (!heroCanvas) return;
+            heroCtx.clearRect(0, 0, heroCanvas.width, heroCanvas.height);
+            balls.forEach((ball, index) => {
+                ball.update();
+                for (let i = index + 1; i < balls.length; i++) {
+                    const otherBall = balls[i];
+                    const dist = Math.hypot(ball.x - otherBall.x, ball.y - otherBall.y);
+                    if (dist - ball.radius - otherBall.radius < 1) {
+                        resolveCollision(ball, otherBall);
+                    }
+                }
+                ball.draw();
+            });
+            requestAnimationFrame(animateHero);
+        }
+
+        // Initial setup and event listeners
+        function setup() {
+            resizeHeroCanvas();
+            initHeroBalls();
+            animateHero();
+            
+            resizeAboutCanvas();
+            animateAboutParticles();
+        }
+        
+        setup();
+
+        window.addEventListener('resize', () => {
+            resizeHeroCanvas();
+            initHeroBalls();
+            resizeAboutCanvas();
+        });
+
+    </script>
+</body>
+</html>
