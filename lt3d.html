@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Linear Transformation Visualizer</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+        #transformationCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            background-color: #f8fafc;
+        }
+        .control-panel {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Canvas for 3D visualization -->
+    <canvas id="transformationCanvas"></canvas>
+
+    <!-- Floating Control Panel -->
+    <div class="control-panel bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6 w-full max-w-xs">
+        <div class="text-left mb-4">
+            <h1 class="text-xl font-bold text-gray-900">3D Linear Transformation</h1>
+            <p class="text-gray-600 mt-1 text-sm">Use your mouse to rotate the view. Enter a vector and a 3x3 matrix.</p>
+        </div>
+
+        <div class="flex flex-col space-y-4">
+            <!-- Vector Input -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Original Vector (x, y, z)</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <input type="number" id="vecX" value="2" class="w-full p-2 text-center bg-gray-100 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    <input type="number" id="vecY" value="3" class="w-full p-2 text-center bg-gray-100 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    <input type="number" id="vecZ" value="1" class="w-full p-2 text-center bg-gray-100 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                </div>
+            </div>
+
+            <!-- Matrix Input -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Transformation Matrix (3x3)</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <input type="number" id="m00" value="1" class="w-full p-2 text-center bg-white rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    <input type="number" id="m01" value="0" class="w-full p-2 text-center bg-white rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    <input type="number" id="m02" value="0" class="w-full p-2 text-center bg-white rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    <input type="number" id="m10" value="0" class="w-full p-2 text-center bg-white rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    <input type="number" id="m11" value="1" class="w-full p-2 text-center bg-white rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    <input type="number" id="m12" value="0" class="w-full p-2 text-center bg-white rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    <input type="number" id="m20" value="0" class="w-full p-2 text-center bg-white rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    <input type="number" id="m21" value="0" class="w-full p-2 text-center bg-white rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    <input type="number" id="m22" value="1" class="w-full p-2 text-center bg-white rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex space-x-4 pt-2">
+                <button id="transformButton" class="flex-1 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all">Transform</button>
+                <button id="resetButton" class="flex-1 bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-300 transition-all">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- three.js scripts -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- DOM Elements ---
+        const canvas = document.getElementById('transformationCanvas');
+        const transformButton = document.getElementById('transformButton');
+        const resetButton = document.getElementById('resetButton');
+        
+        // --- three.js Scene Setup ---
+        let scene, camera, renderer, controls;
+        let originalVectorArrow, transformedVectorArrow, dynamicGrid;
+        let xAxis, yAxis, zAxis;
+        let originalGridVertices, originalXAxisVertices, originalYAxisVertices, originalZAxisVertices;
+        
+        const originalVectorColor = 0xef4444; // Red
+        const transformedVectorColor = 0x3b82f6; // Blue
+
+        // --- State Variables ---
+        let animationFrameId;
+        const identityMatrix = new THREE.Matrix4().identity();
+        let currentMatrix = new THREE.Matrix4().identity();
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf8fafc);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(5, 5, 5);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            // Controls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(5, 10, 7.5);
+            scene.add(directionalLight);
+
+            // Dynamic Grid and Axes
+            createDynamicGrid();
+            createDynamicAxes();
+            
+            // Vector Arrows
+            const origin = new THREE.Vector3(0, 0, 0);
+            const initialVec = getInputs().vector;
+            
+            originalVectorArrow = new THREE.ArrowHelper(initialVec.clone().normalize(), origin, initialVec.length(), originalVectorColor, 0.5, 0.3);
+            scene.add(originalVectorArrow);
+            
+            transformedVectorArrow = new THREE.ArrowHelper(initialVec.clone().normalize(), origin, initialVec.length(), transformedVectorColor, 0.5, 0.3);
+            scene.add(transformedVectorArrow);
+            
+            // Initial state update
+            updateSceneFromInputs();
+
+            // Start animation loop
+            animate();
+        }
+
+        /**
+         * Creates a volumetric grid of lines manually.
+         */
+        function createDynamicGrid() {
+            const size = 10;
+            const divisions = 10;
+            const points = [];
+            const step = size * 2 / divisions;
+
+            for (let i = -size; i <= size; i += step) {
+                // Lines parallel to Z
+                points.push(new THREE.Vector3(-size, i, -size), new THREE.Vector3(size, i, -size));
+                points.push(new THREE.Vector3(i, -size, -size), new THREE.Vector3(i, size, -size));
+                
+                // Lines parallel to X
+                points.push(new THREE.Vector3(-size, -size, i), new THREE.Vector3(size, -size, i));
+                points.push(new THREE.Vector3(-size, i, -size), new THREE.Vector3(-size, i, size));
+                
+                // Lines parallel to Y
+                points.push(new THREE.Vector3(-size, -size, i), new THREE.Vector3(-size, size, i));
+                points.push(new THREE.Vector3(i, -size, -size), new THREE.Vector3(i, -size, size));
+            }
+
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            originalGridVertices = new Float32Array(geometry.attributes.position.array);
+
+            const material = new THREE.LineBasicMaterial({ color: 0xcccccc });
+            dynamicGrid = new THREE.LineSegments(geometry, material);
+            scene.add(dynamicGrid);
+        }
+
+        /**
+         * Creates dynamic X, Y, and Z axes.
+         */
+        function createDynamicAxes() {
+            const axisLength = 100;
+            const redMaterial = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 2 });
+            const greenMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 });
+            const blueMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff, linewidth: 2 });
+
+            // X Axis
+            let pointsX = [new THREE.Vector3(-axisLength, 0, 0), new THREE.Vector3(axisLength, 0, 0)];
+            let geomX = new THREE.BufferGeometry().setFromPoints(pointsX);
+            originalXAxisVertices = new Float32Array(geomX.attributes.position.array);
+            xAxis = new THREE.Line(geomX, redMaterial);
+            scene.add(xAxis);
+
+            // Y Axis
+            let pointsY = [new THREE.Vector3(0, -axisLength, 0), new THREE.Vector3(0, axisLength, 0)];
+            let geomY = new THREE.BufferGeometry().setFromPoints(pointsY);
+            originalYAxisVertices = new Float32Array(geomY.attributes.position.array);
+            yAxis = new THREE.Line(geomY, greenMaterial);
+            scene.add(yAxis);
+
+            // Z Axis
+            let pointsZ = [new THREE.Vector3(0, 0, -axisLength), new THREE.Vector3(0, 0, axisLength)];
+            let geomZ = new THREE.BufferGeometry().setFromPoints(pointsZ);
+            originalZAxisVertices = new Float32Array(geomZ.attributes.position.array);
+            zAxis = new THREE.Line(geomZ, blueMaterial);
+            scene.add(zAxis);
+        }
+
+        /**
+         * Gathers current values from all input fields.
+         */
+        function getInputs() {
+            const vecX = parseFloat(document.getElementById('vecX').value) || 0;
+            const vecY = parseFloat(document.getElementById('vecY').value) || 0;
+            const vecZ = parseFloat(document.getElementById('vecZ').value) || 0;
+
+            const m00 = parseFloat(document.getElementById('m00').value) || 0;
+            const m01 = parseFloat(document.getElementById('m01').value) || 0;
+            const m02 = parseFloat(document.getElementById('m02').value) || 0;
+            const m10 = parseFloat(document.getElementById('m10').value) || 0;
+            const m11 = parseFloat(document.getElementById('m11').value) || 0;
+            const m12 = parseFloat(document.getElementById('m12').value) || 0;
+            const m20 = parseFloat(document.getElementById('m20').value) || 0;
+            const m21 = parseFloat(document.getElementById('m21').value) || 0;
+            const m22 = parseFloat(document.getElementById('m22').value) || 0;
+
+            const matrix = new THREE.Matrix4().set(
+                m00, m01, m02, 0,
+                m10, m11, m12, 0,
+                m20, m21, m22, 0,
+                0,   0,   0,   1
+            );
+
+            return {
+                vector: new THREE.Vector3(vecX, vecY, vecZ),
+                matrix: matrix
+            };
+        }
+        
+        /**
+         * Updates a vector arrow helper.
+         */
+        function updateVectorArrow(arrowHelper, vec, color) {
+            if (vec.length() === 0) {
+                 arrowHelper.visible = false;
+                 return;
+            }
+            arrowHelper.visible = true;
+            arrowHelper.setDirection(vec.clone().normalize());
+            arrowHelper.setLength(vec.length(), 0.5, 0.3);
+            arrowHelper.setColor(color);
+        }
+        
+        /**
+         * Updates the entire scene based on current inputs without animation.
+         */
+        function updateSceneFromInputs() {
+            const { vector } = getInputs();
+            updateVectorArrow(originalVectorArrow, vector, originalVectorColor);
+            
+            const transformedVector = vector.clone().applyMatrix4(currentMatrix);
+            updateVectorArrow(transformedVectorArrow, transformedVector, transformedVectorColor);
+            
+            const tempVec = new THREE.Vector3();
+            
+            // Update grid
+            const gridPositionAttribute = dynamicGrid.geometry.attributes.position;
+            for (let i = 0; i < originalGridVertices.length / 3; i++) {
+                tempVec.fromArray(originalGridVertices, i * 3);
+                tempVec.applyMatrix4(currentMatrix);
+                gridPositionAttribute.setXYZ(i, tempVec.x, tempVec.y, tempVec.z);
+            }
+            gridPositionAttribute.needsUpdate = true;
+
+            // Update axes
+            const xAxisPositionAttribute = xAxis.geometry.attributes.position;
+            for (let i = 0; i < originalXAxisVertices.length / 3; i++) {
+                tempVec.fromArray(originalXAxisVertices, i * 3);
+                tempVec.applyMatrix4(currentMatrix);
+                xAxisPositionAttribute.setXYZ(i, tempVec.x, tempVec.y, tempVec.z);
+            }
+            xAxisPositionAttribute.needsUpdate = true;
+
+            const yAxisPositionAttribute = yAxis.geometry.attributes.position;
+            for (let i = 0; i < originalYAxisVertices.length / 3; i++) {
+                tempVec.fromArray(originalYAxisVertices, i * 3);
+                tempVec.applyMatrix4(currentMatrix);
+                yAxisPositionAttribute.setXYZ(i, tempVec.x, tempVec.y, tempVec.z);
+            }
+            yAxisPositionAttribute.needsUpdate = true;
+
+            const zAxisPositionAttribute = zAxis.geometry.attributes.position;
+            for (let i = 0; i < originalZAxisVertices.length / 3; i++) {
+                tempVec.fromArray(originalZAxisVertices, i * 3);
+                tempVec.applyMatrix4(currentMatrix);
+                zAxisPositionAttribute.setXYZ(i, tempVec.x, tempVec.y, tempVec.z);
+            }
+            zAxisPositionAttribute.needsUpdate = true;
+        }
+
+        /**
+         * Handles the transformation process.
+         */
+        function handleTransform() {
+            if (animationFrameId) TWEEN.removeAll();
+            const { vector, matrix: targetMatrix } = getInputs();
+            animateTransformation(vector, currentMatrix.clone(), targetMatrix);
+        }
+
+        /**
+         * Handles resetting the transformation.
+         */
+        function handleReset() {
+            if (animationFrameId) TWEEN.removeAll();
+            const { vector } = getInputs();
+            animateTransformation(vector, currentMatrix.clone(), identityMatrix.clone());
+        }
+
+        /**
+         * Animates the grid and vector from a start matrix to a target matrix.
+         */
+        function animateTransformation(vector, startMatrix, targetMatrix) {
+            const duration = 1500;
+            const tempMatrix = new THREE.Matrix4();
+            const startElements = startMatrix.elements;
+            const targetElements = targetMatrix.elements;
+            
+            const gridPositionAttribute = dynamicGrid.geometry.attributes.position;
+            const xAxisPositionAttribute = xAxis.geometry.attributes.position;
+            const yAxisPositionAttribute = yAxis.geometry.attributes.position;
+            const zAxisPositionAttribute = zAxis.geometry.attributes.position;
+            const tempVec = new THREE.Vector3();
+
+            const tw = new TWEEN.Tween({ t: 0 })
+                .to({ t: 1 }, duration)
+                .easing(TWEEN.Easing.Sinusoidal.InOut)
+                .onUpdate(({ t }) => {
+                    const interpolatedElements = startElements.map((startVal, i) => {
+                        return startVal + (targetElements[i] - startVal) * t;
+                    });
+                    tempMatrix.set(...interpolatedElements);
+                    
+                    // Update grid vertices
+                    for (let i = 0; i < originalGridVertices.length / 3; i++) {
+                        tempVec.fromArray(originalGridVertices, i * 3);
+                        tempVec.applyMatrix4(tempMatrix);
+                        gridPositionAttribute.setXYZ(i, tempVec.x, tempVec.y, tempVec.z);
+                    }
+                    gridPositionAttribute.needsUpdate = true;
+                    
+                    // Update axis vertices
+                    for (let i = 0; i < originalXAxisVertices.length / 3; i++) {
+                        tempVec.fromArray(originalXAxisVertices, i * 3);
+                        tempVec.applyMatrix4(tempMatrix);
+                        xAxisPositionAttribute.setXYZ(i, tempVec.x, tempVec.y, tempVec.z);
+                    }
+                    xAxisPositionAttribute.needsUpdate = true;
+                    for (let i = 0; i < originalYAxisVertices.length / 3; i++) {
+                        tempVec.fromArray(originalYAxisVertices, i * 3);
+                        tempVec.applyMatrix4(tempMatrix);
+                        yAxisPositionAttribute.setXYZ(i, tempVec.x, tempVec.y, tempVec.z);
+                    }
+                    yAxisPositionAttribute.needsUpdate = true;
+                    for (let i = 0; i < originalZAxisVertices.length / 3; i++) {
+                        tempVec.fromArray(originalZAxisVertices, i * 3);
+                        tempVec.applyMatrix4(tempMatrix);
+                        zAxisPositionAttribute.setXYZ(i, tempVec.x, tempVec.y, tempVec.z);
+                    }
+                    zAxisPositionAttribute.needsUpdate = true;
+                    
+                    // Update transformed vector
+                    const transformedVector = vector.clone().applyMatrix4(tempMatrix);
+                    updateVectorArrow(transformedVectorArrow, transformedVector, transformedVectorColor);
+                })
+                .onComplete(() => {
+                    currentMatrix.copy(targetMatrix);
+                })
+                .start();
+        }
+
+        /**
+         * Main animation loop.
+         */
+        function animate(time) {
+            animationFrameId = requestAnimationFrame(animate);
+            controls.update();
+            TWEEN.update(time);
+            renderer.render(scene, camera);
+        }
+        
+        // --- Event Listeners ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        transformButton.addEventListener('click', handleTransform);
+        resetButton.addEventListener('click', handleReset);
+        
+        // Add listeners to all inputs to update the static original vector
+        document.querySelectorAll('.control-panel input').forEach(input => {
+            input.addEventListener('input', () => {
+                const { vector } = getInputs();
+                updateVectorArrow(originalVectorArrow, vector, originalVectorColor);
+            });
+        });
+        
+        // --- TWEEN.js (for smooth animations) ---
+        const tweenScript = document.createElement('script');
+        tweenScript.src = 'https://unpkg.com/@tweenjs/tween.js@18.6.4/dist/tween.umd.js';
+        document.body.appendChild(tweenScript);
+        tweenScript.onload = () => {
+             // --- Initial Setup ---
+            init();
+        };
+
+    </script>
+</body>
+</html>
